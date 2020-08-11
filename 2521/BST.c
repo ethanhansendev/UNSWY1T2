@@ -34,9 +34,11 @@ void freeTree(Tree tree) {
 Tree insertTree(Tree tree, int value) {
     if (tree == NULL) return newTree(value);
     if (tree->value > value) {
+        tree->left = insertTree(tree->left, value);
+    } else if (tree->value < value) {
         tree->right = insertTree(tree->right, value);
     } else {
-        tree->left = insertTree(tree->left, value);
+        return tree;
     }
     return tree;
 } 
@@ -44,14 +46,12 @@ Tree insertTree(Tree tree, int value) {
 int treeContains(Tree tree, int value) {
     if (tree == NULL) return 0;
     if (tree->value > value) {
-        return treeContains(tree->right, value);
-    } else if (tree->value < value) {
         return treeContains(tree->left, value);
+    } else if (tree->value < value) {
+        return treeContains(tree->right, value);
     } else {
         return 1;
     }
-    return 0;
-
 }
 
 void showTree(Tree tree) {
@@ -80,7 +80,6 @@ Tree deleteNode(Tree tree, int value) {
     if (!treeContains(tree, value) || tree == NULL) return NULL;
     Tree current = tree;
     Tree parent = NULL;
-
     // Find Node & Parent
     if (current->value > value) {
         tree->left = deleteNode(tree->left, value);
@@ -104,8 +103,41 @@ Tree deleteNode(Tree tree, int value) {
             return sub;
         }
     }
-    return NULL;
+    return tree;
 }
+
+// Rotate Right 
+Tree rotateRight(Tree tree) {
+    if (tree == NULL || tree->left == NULL) return tree;
+    Tree top = tree->left;
+    tree->left = top->right;
+    top->right = tree;
+    return top;
+}
+
+// Rotate Left
+Tree rotateLeft(Tree tree) {
+    if (tree == NULL || tree->right == NULL) return tree;
+    Tree top = tree->right;
+    tree->right = top->left;
+    top->left = tree;
+    return top;
+}
+
+// Insertion at Root
+Tree rootInsert(Tree tree, int value) {
+    Tree t;
+    if (tree == NULL) {
+        tree = newTree(value);
+    } else if (tree->value > value) {
+        tree->left=rootInsert(tree->left, value);
+        tree = rotateRight(tree);
+    } else if (tree->value < value) {
+        tree->right=rootInsert(tree->right, value);
+        tree = rotateLeft(tree);
+    }
+    return tree;
+} 
 
 int main(void) {
     printf("Create a tree:\n");
@@ -118,6 +150,9 @@ int main(void) {
     printf("\nDelete a node: ");
     scanf("%d", &value);
     tree = deleteNode(tree, value);
+    showTree(tree);
+    tree = rootInsert(tree, 7);
+    printf("\n");
     showTree(tree);
     return 0;
 }
